@@ -117,7 +117,7 @@ class reduce_mean(Operation):
         return np.mean(value)
 
     def backward(self, grad_output: np.ndarray):
-        return np.ones(self._shape) * grad_output * np.prod(self._shape)
+        return np.ones(self._shape) * grad_output * 1 / np.prod(self._shape)
 
 
 def get_nodes_by_type(graph, the_type):
@@ -154,15 +154,28 @@ graph = nx.DiGraph()
 # a = Variable(np.array([[2.0, 2.0]]))
 a = InputNode("a")
 b = Variable(np.array([3.0, 2.0]))
-vec = Variable(np.array([2.0, 1.0]))
+W = Variable(np.array([[2.0], [1.0]]))
 mul_op = matmul()
 add_op = add()
 
-graph.add_edges_from([(a, mul_op), (vec, mul_op),
-                      (mul_op, add_op), (b, add_op)])
+y = InputNode("y")
+diff = minus()
+square_diff = square()
+loss_node = reduce_mean()
+
+
+graph.add_edges_from([
+    (a, mul_op), (W, mul_op), (mul_op, add_op), (b, add_op),
+    # TODO: non-linearity here
+    (add_op, diff), (y, diff),
+    (diff, square_diff),
+    (square_diff, loss_node)
+])
 nx.draw(graph, graphviz_layout(graph, prog='dot'),
         labels={node: node._name() for node in graph})
 plt.show()
-run(graph, {"a": np.array([[2.0, 2.0]])})
+run(graph, {"a": np.array([[2.0, 2.0]]),
+            "y": np.array([[5.0, 6.0]])})
+print(mul_op.value)
 print(add_op.value)
-
+print(loss_node.value)
