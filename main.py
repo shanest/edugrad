@@ -120,6 +120,23 @@ class reduce_mean(Operation):
         return np.ones(self._shape) * grad_output * 1 / np.prod(self._shape)
 
 
+def feedforward_layer(input_size, output_size, input_node: Operation,
+                      activation: Operation = None, initializer=np.random.random):
+
+    weights = Variable(initializer((input_size, output_size)))
+    biases = Variable(initializer((1, output_size)))
+    mul_node = matmul()
+    add_node = add()
+
+    edges = [(input_node, mul_node), (weights, mul_node),
+             (mul_node, add_node), (biases, add_node)]
+
+    if activation:
+        edges.append((add_node, activation()))
+
+    return edges[-1][-1], edges
+
+
 def get_nodes_by_type(graph, the_type):
     return [node for node in graph if type(node) == the_type]
 
@@ -158,16 +175,18 @@ W = Variable(np.array([[2.0], [1.0]]))
 mul_op = matmul()
 add_op = add()
 
+ff_out_node, ff_edges = feedforward_layer(2, 1, a)
+ff2_out_node, ff2_edges = feedforward_layer(1, 1, ff_out_node)
+
 y = InputNode("y")
 diff = minus()
 square_diff = square()
 loss_node = reduce_mean()
 
 
-graph.add_edges_from([
-    (a, mul_op), (W, mul_op), (mul_op, add_op), (b, add_op),
+graph.add_edges_from(ff_edges + ff2_edges + [
     # TODO: non-linearity here
-    (add_op, diff), (y, diff),
+    (ff2_out_node, diff), (y, diff),
     (diff, square_diff),
     (square_diff, loss_node)
 ])
