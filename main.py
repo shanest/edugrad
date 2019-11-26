@@ -97,7 +97,27 @@ class scalar_mul(Operation):
         return scalar * tensor
 
     def backward(self, grad_output):
-        return self._scalar
+        return self._scalar * grad_output
+
+
+class reduce_sum(Operation):
+
+    def forward(self, value: np.ndarray):
+        self._shape = value.shape
+        return np.sum(value)
+
+    def backward(self, grad_output: np.ndarray):
+        return np.ones(self._shape) * grad_output
+
+
+class reduce_mean(Operation):
+
+    def forward(self, value: np.ndarray):
+        self._shape = value.shape
+        return np.mean(value)
+
+    def backward(self, grad_output: np.ndarray):
+        return np.ones(self._shape) * grad_output * np.prod(self._shape)
 
 
 def get_nodes_by_type(graph, the_type):
