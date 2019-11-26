@@ -23,6 +23,7 @@ class Operation:
         return value
 
     def _name(self):
+        # TODO: fancy naming for e.g. variables?
         return self.name or type(self).__name__
 
 
@@ -100,6 +101,15 @@ class scalar_mul(Operation):
         return self._scalar * grad_output
 
 
+class relu(Operation):
+
+    def forward(self, value):
+        return np.maximum(0, value)
+
+    def backward(self, grad_output):
+        pass
+
+
 class reduce_sum(Operation):
 
     def forward(self, value: np.ndarray):
@@ -121,6 +131,7 @@ class reduce_mean(Operation):
 
 
 def feedforward_layer(input_size, output_size, input_node: Operation,
+                      # TODO: non-callable initializers, e.g. np arrays?
                       activation: Operation = None, initializer=np.random.random):
 
     weights = Variable(initializer((input_size, output_size)))
@@ -169,14 +180,14 @@ def run(graph, inputs=None):
 graph = nx.DiGraph()
 
 # a = Variable(np.array([[2.0, 2.0]]))
-a = InputNode("a")
+x = InputNode("x")
 b = Variable(np.array([3.0, 2.0]))
 W = Variable(np.array([[2.0], [1.0]]))
 mul_op = matmul()
 add_op = add()
 
-ff_out_node, ff_edges = feedforward_layer(2, 1, a)
-ff2_out_node, ff2_edges = feedforward_layer(1, 1, ff_out_node)
+ff_out_node, ff_edges = feedforward_layer(2, 1, x, relu)
+ff2_out_node, ff2_edges = feedforward_layer(1, 1, ff_out_node, relu)
 
 y = InputNode("y")
 diff = minus()
