@@ -1,3 +1,5 @@
+from typing import Tuple, List, Callable, Optional, Any, Type, Dict
+
 import numpy as np
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
@@ -52,7 +54,7 @@ class InputNode(LeafOperation):
 
 class add(Operation):
 
-    def forward(self, a, b):
+    def forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return a + b
 
     def backward(self, output_grad):
@@ -61,7 +63,7 @@ class add(Operation):
 
 class minus(Operation):
 
-    def forward(self, a, b):
+    def forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return a - b
 
     def backward(self, output_grad):
@@ -71,7 +73,7 @@ class minus(Operation):
 
 class matmul(Operation):
 
-    def forward(self, mat1, mat2):
+    def forward(self, mat1: np.ndarray, mat2: np.ndarray) -> np.ndarray:
         """ For example:
         mat1: (batch_size, input_size)
         mat2: (input_size, output_size)
@@ -84,26 +86,16 @@ class matmul(Operation):
 
 class square(Operation):
 
-    def forward(self, value):
+    def forward(self, value: np.ndarray) -> np.ndarray:
         return value**2
 
     def backward(self, grad_output):
         return 2*grad_output
 
 
-class scalar_mul(Operation):
-
-    def forward(self, scalar, tensor):
-        self._scalar = scalar
-        return scalar * tensor
-
-    def backward(self, grad_output):
-        return self._scalar * grad_output
-
-
 class relu(Operation):
 
-    def forward(self, value):
+    def forward(self, value: np.ndarray) -> np.ndarray:
         return np.maximum(0, value)
 
     def backward(self, grad_output):
@@ -112,7 +104,7 @@ class relu(Operation):
 
 class reduce_sum(Operation):
 
-    def forward(self, value: np.ndarray):
+    def forward(self, value: np.ndarray) -> np.ndarray:
         self._shape = value.shape
         return np.sum(value)
 
@@ -122,7 +114,7 @@ class reduce_sum(Operation):
 
 class reduce_mean(Operation):
 
-    def forward(self, value: np.ndarray):
+    def forward(self, value: np.ndarray) -> np.ndarray:
         self._shape = value.shape
         return np.mean(value)
 
@@ -130,9 +122,12 @@ class reduce_mean(Operation):
         return np.ones(self._shape) * grad_output * 1 / np.prod(self._shape)
 
 
-def feedforward_layer(input_size, output_size, input_node: Operation,
-                      # TODO: non-callable initializers, e.g. np arrays?
-                      activation: Operation = None, initializer=np.random.random):
+def feedforward_layer(
+    input_size: int, output_size: int, input_node: Operation,
+    # TODO: non-callable initializers, e.g. np arrays?
+    activation: Optional[Operation] = None,
+    initializer: Callable = np.random.random
+) -> Tuple[Operation, List[Tuple[Operation]]]:
 
     weights = Variable(initializer((input_size, output_size)))
     biases = Variable(initializer((1, output_size)))
@@ -148,18 +143,18 @@ def feedforward_layer(input_size, output_size, input_node: Operation,
     return edges[-1][-1], edges
 
 
-def get_nodes_by_type(graph, the_type):
+def get_nodes_by_type(graph: nx.DiGraph, the_type: Type) -> List[Any]:
     return [node for node in graph if type(node) == the_type]
 
 
-def get_input_nodes(graph):
+def get_input_nodes(graph: nx.DiGraph) -> List[Any]:
     return get_nodes_by_type(graph, InputNode)
 
-def get_variables(graph):
+def get_variables(graph: nx.DiGraph) -> List[Any]:
     return get_nodes_by_type(graph, Variable)
 
 
-def initialize(graph, inputs):
+def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]):
     """ Given a graph with input placeholders and input values, initialize the
     placeholders with the values.
 
@@ -170,8 +165,9 @@ def initialize(graph, inputs):
         node.value = inputs[node.name]
 
 
-def run(graph, inputs=None):
-    initialize(graph, inputs)
+def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None):
+    if inputs:
+        initialize(graph, inputs)
     sorted_graph = nx.topological_sort(graph)
     for op in sorted_graph:
         op(*[node.value for node in graph.predecessors(op)])
@@ -204,7 +200,7 @@ graph.add_edges_from(ff_edges + ff2_edges + [
 nx.draw(graph, graphviz_layout(graph, prog='dot'),
         labels={node: node._name() for node in graph})
 plt.show()
-run(graph, {"a": np.array([[2.0, 2.0]]),
+run(graph, {"x": np.array([[2.0, 2.0]]),
             "y": np.array([[5.0, 6.0]])})
 print(mul_op.value)
 print(add_op.value)
