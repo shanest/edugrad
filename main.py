@@ -13,10 +13,10 @@ class Operation:
         self.grad = grad
         self.name = name
 
-    def forward(self):
+    def forward(self, *args):
         raise NotImplementedError
 
-    def backward(self):
+    def backward(self, output_grad):
         raise NotImplementedError
 
     def __call__(self, *args):
@@ -99,7 +99,8 @@ class relu(Operation):
         return np.maximum(0, value)
 
     def backward(self, grad_output):
-        pass
+        # self.value is cached output of last run of forward()
+        return (self.value > 0).astype(float)
 
 
 class reduce_sum(Operation):
