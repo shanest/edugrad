@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 
 class Operation:
 
-    def __init__(self, value=None, grad=None, name=None):
+    def __init__(self, value=None, grads=None, name=None):
         self.value = value
-        self.grad = grad
+        self.grads = grads
         self.name = name
 
     def forward(self, *args):
