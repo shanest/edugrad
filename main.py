@@ -41,9 +41,9 @@ class LeafOperation(Operation):
 
 class Variable(LeafOperation):
 
-    def __init__(self, value):
+    def __init__(self, value, name=None):
         # no input nodes, value is required
-        super(Variable, self).__init__(value=value)
+        super(Variable, self).__init__(value=value, name=name)
 
 
 class InputNode(LeafOperation):
@@ -130,8 +130,8 @@ def feedforward_layer(
     initializer: Callable = np.random.random
 ) -> Tuple[Operation, List[Tuple[Operation]]]:
 
-    weights = Variable(initializer((input_size, output_size)))
-    biases = Variable(initializer((1, output_size)))
+    weights = Variable(initializer((input_size, output_size)), "W")
+    biases = Variable(initializer((1, output_size)), "b")
     mul_node = matmul()
     add_node = add()
 
