@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 
 class Operation:
-
     def __init__(self, value=None, grads=None, name=None):
         self.value = value
         self.grads = grads
@@ -30,7 +29,6 @@ class Operation:
 
 
 class LeafOperation(Operation):
-
     def forward(self):
         return self.value
 
@@ -40,20 +38,17 @@ class LeafOperation(Operation):
 
 
 class Variable(LeafOperation):
-
     def __init__(self, value, name=None):
         # no input nodes, value is required
         super(Variable, self).__init__(value=value, name=name)
 
 
 class InputNode(LeafOperation):
-
     def __init__(self, name):
         super(InputNode, self).__init__(name=name)
 
 
 class add(Operation):
-
     def forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return a + b
 
@@ -62,7 +57,6 @@ class add(Operation):
 
 
 class minus(Operation):
-
     def forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return a - b
 
@@ -72,7 +66,6 @@ class minus(Operation):
 
 
 class matmul(Operation):
-
     def forward(self, mat1: np.ndarray, mat2: np.ndarray) -> np.ndarray:
         """ For example:
         mat1: (batch_size, input_size)
@@ -85,16 +78,14 @@ class matmul(Operation):
 
 
 class square(Operation):
-
     def forward(self, value: np.ndarray) -> np.ndarray:
-        return value**2
+        return value ** 2
 
     def backward(self, grad_output):
-        return 2*grad_output
+        return 2 * grad_output
 
 
 class relu(Operation):
-
     def forward(self, value: np.ndarray) -> np.ndarray:
         return np.maximum(0, value)
 
@@ -104,7 +95,6 @@ class relu(Operation):
 
 
 class reduce_sum(Operation):
-
     def forward(self, value: np.ndarray) -> np.ndarray:
         self._shape = value.shape
         return np.sum(value)
@@ -114,7 +104,6 @@ class reduce_sum(Operation):
 
 
 class reduce_mean(Operation):
-
     def forward(self, value: np.ndarray) -> np.ndarray:
         self._shape = value.shape
         return np.mean(value)
@@ -124,10 +113,12 @@ class reduce_mean(Operation):
 
 
 def feedforward_layer(
-    input_size: int, output_size: int, input_node: Operation,
+    input_size: int,
+    output_size: int,
+    input_node: Operation,
     # TODO: non-callable initializers, e.g. np arrays?
     activation: Optional[Operation] = None,
-    initializer: Callable = np.random.random
+    initializer: Callable = np.random.random,
 ) -> Tuple[Operation, List[Tuple[Operation]]]:
 
     weights = Variable(initializer((input_size, output_size)), "W")
@@ -135,8 +126,12 @@ def feedforward_layer(
     mul_node = matmul()
     add_node = add()
 
-    edges = [(input_node, mul_node), (weights, mul_node),
-             (mul_node, add_node), (biases, add_node)]
+    edges = [
+        (input_node, mul_node),
+        (weights, mul_node),
+        (mul_node, add_node),
+        (biases, add_node),
+    ]
 
     if activation:
         edges.append((add_node, activation()))
@@ -151,8 +146,10 @@ def mse_loss(
     square_diff = square()
     loss_node = reduce_mean()
     edges = [
-        (prediction_node, diff), (target_node, diff),
-        (diff, square_diff), (square_diff, loss_node)
+        (prediction_node, diff),
+        (target_node, diff),
+        (diff, square_diff),
+        (square_diff, loss_node),
     ]
     return loss_node, edges
 
@@ -163,6 +160,7 @@ def get_nodes_by_type(graph: nx.DiGraph, the_type: Type) -> List[Any]:
 
 def get_input_nodes(graph: nx.DiGraph) -> List[Any]:
     return get_nodes_by_type(graph, InputNode)
+
 
 def get_variables(graph: nx.DiGraph) -> List[Any]:
     return get_nodes_by_type(graph, Variable)
@@ -187,7 +185,7 @@ def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None):
         op(*[node.value for node in graph.predecessors(op)])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     graph = nx.DiGraph()
 
     x = InputNode("x")
@@ -199,11 +197,13 @@ if __name__ == '__main__':
 
     graph.add_edges_from(ff_edges + ff2_edges + loss_edges)
 
-    nx.draw(graph, graphviz_layout(graph, prog='dot'),
-            labels={node: node._name() for node in graph})
+    nx.draw(
+        graph,
+        graphviz_layout(graph, prog="dot"),
+        labels={node: node._name() for node in graph},
+    )
     plt.show()
 
-    run(graph, {"x": np.array([[2.0, 2.0]]),
-                "y": np.array([[5.0, 6.0]])})
+    run(graph, {"x": np.array([[2.0, 2.0]]), "y": np.array([[5.0, 6.0]])})
 
     print(loss_node.value)
