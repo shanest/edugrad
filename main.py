@@ -62,7 +62,7 @@ class minus(Operation):
 
     def backward(self, output_grad):
         # TODO: shape?
-        return 1.0, -1.0
+        return output_grad, -output_grad
 
 
 class matmul(Operation):
@@ -109,15 +109,15 @@ class reduce_mean(Operation):
         return np.mean(value)
 
     def backward(self, grad_output: np.ndarray):
-        return np.ones(self._shape) * grad_output * 1 / np.prod(self._shape)
+        return np.ones(self._shape) * grad_output / np.prod(self._shape)
 
 
 def feedforward_layer(
     input_size: int,
     output_size: int,
     input_node: Operation,
-    # TODO: non-callable initializers, e.g. np arrays?
     activation: Optional[Operation] = None,
+    # TODO: non-callable initializers, e.g. np arrays?
     initializer: Callable = np.random.random,
 ) -> Tuple[Operation, List[Tuple[Operation]]]:
 
