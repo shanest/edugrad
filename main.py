@@ -177,15 +177,32 @@ def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]):
         node.value = inputs[node.name]
 
 
-def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None):
+def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None) -> None:
     if inputs:
         initialize(graph, inputs)
     sorted_graph = nx.topological_sort(graph)
     for op in sorted_graph:
         op(*[node.value for node in graph.predecessors(op)])
 
+def draw_graph(graph: nx.DiGraph) -> None:
+    nx.draw(
+        graph,
+        graphviz_layout(graph, prog="dot"),
+        labels={node: node._name() for node in graph},
+    )
+    # TODO: write to file if specified
+    plt.show()
+
 
 if __name__ == "__main__":
+
+    test_graph = nx.DiGraph()
+    a = InputNode("a")
+    b = InputNode("b")
+    diff = minus()
+    test_graph.add_edges_from(((a, diff), (b, diff)))
+    draw_graph(test_graph)
+
     graph = nx.DiGraph()
 
     x = InputNode("x")
@@ -196,13 +213,7 @@ if __name__ == "__main__":
     loss_node, loss_edges = mse_loss(ff2_out_node, y)
 
     graph.add_edges_from(ff_edges + ff2_edges + loss_edges)
-
-    nx.draw(
-        graph,
-        graphviz_layout(graph, prog="dot"),
-        labels={node: node._name() for node in graph},
-    )
-    plt.show()
+    draw_graph(graph)
 
     run(graph, {"x": np.array([[2.0, 2.0]]), "y": np.array([[5.0, 6.0]])})
 
