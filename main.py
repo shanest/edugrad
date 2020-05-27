@@ -71,7 +71,6 @@ class minus(Operation):
         return a - b
 
     def backward(self, output_grad):
-        # TODO: shape?
         return output_grad, -output_grad
 
 
@@ -81,11 +80,12 @@ class matmul(Operation):
         mat1: (batch_size, input_size)
         mat2: (input_size, output_size)
         """
-        return np.dot(mat1, mat2)
+        self.mat1 = mat1
+        self.mat2 = mat2
+        return mat1 @ mat2
 
     def backward(self, grad_output):
-        # TODO: implement this!
-        pass
+        return grad_output @ self.mat2.T, self.mat1.T @ grad_output
 
 
 class square(Operation):
