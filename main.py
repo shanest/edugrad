@@ -184,6 +184,27 @@ def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None) -> None:
     for op in sorted_graph:
         op(*[node.value for node in graph.predecessors(op)])
 
+
+def backward(graph: nx.DiGraph, node: Operation):
+    # TODO: raise error if no value?
+    sorted_graph = nx.topological_sort(graph)
+    reversed_order = reversed(list(sorted_graph))
+    grad_table = {node: np.ones(node.value.shape)}
+    for op in reversed_order:
+        if op != node:
+            grad_table[op] = np.zeros(op.value.shape)
+            for successor in graph.successors(op):
+                grad_successor_outputs = grad_table[successor]
+                grad_successor_inputs = successor.backward(grad_successor_outputs)
+                if len(grad_successor_inputs) == 1:
+                    grad_table[op] += grad_successor_inputs
+                else: 
+                    # TODO: there must be a better way of doing this
+                    op_index = list(graph.predecessors(successor)).index(op)
+                    grad_table[op] += grad_successor_inputs[op_index]
+    return grad_table
+
+
 def draw_graph(graph: nx.DiGraph) -> None:
     nx.draw(
         graph,
@@ -201,7 +222,10 @@ if __name__ == "__main__":
     b = InputNode("b")
     diff = minus()
     test_graph.add_edges_from(((a, diff), (b, diff)))
+    run(test_graph, {"a": np.array([1.0, 2.0]), "b": np.array([2.0, 1.0])})
+    print(diff.value)
     draw_graph(test_graph)
+    print(backward(test_graph, diff))
 
     graph = nx.DiGraph()
 
