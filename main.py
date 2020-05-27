@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 
 
 class Operation:
-    def __init__(self, value=None, grads=None, name=None):
+    def __init__(self, value=None, grad=None, name=None):
         self.value = value
-        self.grads = grads
+        self.grad = grad
         self.name = name
 
     def forward(self, *args):
@@ -185,24 +185,24 @@ def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None) -> None:
         op(*[node.value for node in graph.predecessors(op)])
 
 
-def backward(graph: nx.DiGraph, node: Operation):
+def backward(graph: nx.DiGraph, node: Operation) -> None:
     # TODO: raise error if no value?
     sorted_graph = nx.topological_sort(graph)
     reversed_order = reversed(list(sorted_graph))
-    grad_table = {node: np.ones(node.value.shape)}
+    node.grad = np.ones(node.value.shape)
     for op in reversed_order:
         if op != node:
-            grad_table[op] = np.zeros(op.value.shape)
+            # TODO: separate out zero-ing of grads?
+            op.grad = np.zeros(op.value.shape)
             for successor in graph.successors(op):
-                grad_successor_outputs = grad_table[successor]
-                grad_successor_inputs = successor.backward(grad_successor_outputs)
-                if len(grad_successor_inputs) == 1:
-                    grad_table[op] += grad_successor_inputs
-                else: 
+                grad_successor_wrt_inputs = successor.backward(successor.grad)
+                # TODO: refactor so that all backwards return lists?
+                if len(grad_successor_wrt_inputs) == 1:
+                    op.grad += grad_successor_wrt_inputs
+                else:
                     # TODO: there must be a better way of doing this
                     op_index = list(graph.predecessors(successor)).index(op)
-                    grad_table[op] += grad_successor_inputs[op_index]
-    return grad_table
+                    op.grad += grad_successor_wrt_inputs[op_index]
 
 
 def draw_graph(graph: nx.DiGraph) -> None:
@@ -217,15 +217,26 @@ def draw_graph(graph: nx.DiGraph) -> None:
 
 if __name__ == "__main__":
 
+    # TODO: write formal tests?
     test_graph = nx.DiGraph()
     a = InputNode("a")
     b = InputNode("b")
     diff = minus()
-    test_graph.add_edges_from(((a, diff), (b, diff)))
-    run(test_graph, {"a": np.array([1.0, 2.0]), "b": np.array([2.0, 1.0])})
+    add_node = add()
+    c = InputNode("c")
+    test_graph.add_edges_from(((a, diff), (b, diff), (diff, add_node), (c, add_node)))
+    run(
+        test_graph,
+        {
+            "a": np.array([1.0, 2.0]),
+            "b": np.array([2.0, 1.0]),
+            "c": np.array([2.0, 1.0]),
+        },
+    )
     print(diff.value)
     draw_graph(test_graph)
-    print(backward(test_graph, diff))
+    backward(test_graph, add_node)
+    print({node._name(): node.grad for node in test_graph})
 
     graph = nx.DiGraph()
 
