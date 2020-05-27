@@ -1,165 +1,18 @@
-from typing import List, Callable, Optional, Any, Type, Dict
+from typing import Any, Dict
 
 import numpy as np
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.pyplot as plt
 
-# TODO: split into files!
+import util
+import ops
+import config
+
 # TODO: write rudimentary trainer
 # TODO: simple example (parity?)
 # TODO: add README
 # TODO: general documentation
-
-
-class Operation:
-    def __init__(self, *inputs, value=None, grad=None, name=None):
-        # set values
-        self.value = value
-        self.grad = grad
-        self.name = name
-        # add node and edges to graph
-        _graph.add_node(self)
-        for input_node in inputs:
-            _graph.add_edge(input_node, self)
-
-    def forward(self, *args):
-        raise NotImplementedError
-
-    def backward(self, output_grad):
-        raise NotImplementedError
-
-    def __call__(self, *args):
-        value = self.forward(*args)
-        self.value = value
-        return value
-
-    def _name(self):
-        # TODO: fancy naming for e.g. variables?
-        return self.name or type(self).__name__
-
-
-class LeafOperation(Operation):
-    def forward(self):
-        return self.value
-
-    def backward(self):
-        pass
-
-
-class Variable(LeafOperation):
-    def __init__(self, value, name=None):
-        # no input nodes, value is required
-        super(Variable, self).__init__(value=value, name=name)
-
-
-class InputNode(LeafOperation):
-    def __init__(self, name):
-        super(InputNode, self).__init__(name=name)
-
-
-class add(Operation):
-    def forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
-        return a + b
-
-    def backward(self, output_grad):
-        return output_grad, output_grad
-
-
-class minus(Operation):
-    def forward(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
-        return a - b
-
-    def backward(self, output_grad):
-        return output_grad, -output_grad
-
-
-class matmul(Operation):
-    def forward(self, mat1: np.ndarray, mat2: np.ndarray) -> np.ndarray:
-        """ For example:
-        mat1: (batch_size, input_size)
-        mat2: (input_size, output_size)
-        """
-        self.mat1 = mat1
-        self.mat2 = mat2
-        return mat1 @ mat2
-
-    def backward(self, grad_output):
-        return grad_output @ self.mat2.T, self.mat1.T @ grad_output
-
-
-class square(Operation):
-    def forward(self, value: np.ndarray) -> np.ndarray:
-        return value ** 2
-
-    def backward(self, grad_output):
-        return 2 * grad_output
-
-
-class relu(Operation):
-    def forward(self, value: np.ndarray) -> np.ndarray:
-        return np.maximum(0, value)
-
-    def backward(self, grad_output):
-        # self.value is cached output of last run of forward()
-        return (self.value > 0).astype(float)
-
-
-class reduce_sum(Operation):
-    def forward(self, value: np.ndarray) -> np.ndarray:
-        self._shape = value.shape
-        return np.sum(value)
-
-    def backward(self, grad_output: np.ndarray):
-        return np.ones(self._shape) * grad_output
-
-
-class reduce_mean(Operation):
-    def forward(self, value: np.ndarray) -> np.ndarray:
-        self._shape = value.shape
-        return np.mean(value)
-
-    def backward(self, grad_output: np.ndarray):
-        return np.ones(self._shape) * grad_output / np.prod(self._shape)
-
-
-def feedforward_layer(
-    input_size: int,
-    output_size: int,
-    input_node: Operation,
-    activation: Optional[Operation] = None,
-    # NOTE: can initialize with a fixed array by using lambda:
-    initializer: Callable = np.random.random,
-) -> Operation:
-
-    weights = Variable(initializer((input_size, output_size)), "W")
-    biases = Variable(initializer((1, output_size)), "b")
-    mul_node = matmul(input_node, weights)
-    add_node = add(mul_node, biases)
-
-    if activation:
-        return activation(add_node)
-
-    return add_node
-
-
-def mse_loss(prediction_node: Operation, target_node: Operation) -> Operation:
-    diff = minus(prediction_node, target_node)
-    square_diff = square(diff)
-    loss_node = reduce_mean(square_diff)
-    return loss_node
-
-
-def get_nodes_by_type(graph: nx.DiGraph, the_type: Type) -> List[Any]:
-    return [node for node in graph if type(node) == the_type]
-
-
-def get_input_nodes(graph: nx.DiGraph) -> List[Any]:
-    return get_nodes_by_type(graph, InputNode)
-
-
-def get_variables(graph: nx.DiGraph) -> List[Any]:
-    return get_nodes_by_type(graph, Variable)
 
 
 # TODO: should initialize and backward be in session?
@@ -169,12 +22,12 @@ def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]) -> None:
 
     Note: doesn't do anything fancy.
     """
-    input_nodes = get_input_nodes(graph)
+    input_nodes = util.get_input_nodes(graph)
     for node in input_nodes:
         node.value = inputs[node.name]
 
 
-def backward(graph: nx.DiGraph, node: Operation) -> None:
+def backward(graph: nx.DiGraph, node: ops.Operation) -> None:
     # TODO: instead, reverse the graph, get subgraph at node, topological sort
     # the result of that
     subgraph = get_subgraph_above(graph, node)
@@ -214,16 +67,14 @@ def get_subgraph_above(graph: nx.DiGraph, node: Any):
 
 class Session:
     def __enter__(self):
-        global _graph
-        _graph = nx.DiGraph()
-        self.graph = _graph
+        config._graph = nx.DiGraph()
+        self.graph = config._graph
         return self
 
     def __exit__(self, *exc_details):
-        global _graph
-        del _graph
+        del config._graph
 
-    def run(self, node: Operation, inputs: Dict[str, np.ndarray] = None) -> None:
+    def run(self, node: ops.Operation, inputs: Dict[str, np.ndarray] = None) -> None:
         subgraph = get_subgraph_above(self.graph, node)
         if inputs:
             initialize(subgraph, inputs)
@@ -235,20 +86,20 @@ class Session:
 if __name__ == "__main__":
 
     with Session() as sess:
-        a = InputNode("a")
-        b = InputNode("b")
-        diff = minus(a, b)
+        a = ops.InputNode("a")
+        b = ops.InputNode("b")
+        diff = ops.minus(a, b)
         draw_graph(sess.graph)
         sess.run(diff, {"a": np.array([1.0, 2.0]), "b": np.array([3.0, 1.0])})
         print(diff.value)
 
     # TODO: write formal tests?
     with Session() as sess:
-        a = InputNode("a")
-        b = InputNode("b")
-        diff = minus(a, b)
-        c = InputNode("c")
-        add_node = add(diff, c)
+        a = ops.InputNode("a")
+        b = ops.InputNode("b")
+        diff = ops.minus(a, b)
+        c = ops.InputNode("c")
+        add_node = ops.add(diff, c)
         sess.run(
             add_node,
             {
@@ -263,12 +114,12 @@ if __name__ == "__main__":
         print({node._name(): node.grad for node in sess.graph})
 
     with Session() as sess:
-        x = InputNode("x")
-        ff1 = feedforward_layer(2, 1, x, relu)
-        ff2 = feedforward_layer(1, 1, ff1, relu)
+        x = ops.InputNode("x")
+        ff1 = ops.feedforward_layer(2, 1, x, ops.relu)
+        ff2 = ops.feedforward_layer(1, 1, ff1, ops.relu)
 
-        y = InputNode("y")
-        loss_node = mse_loss(ff2, y)
+        y = ops.InputNode("y")
+        loss_node = ops.mse_loss(ff2, y)
 
         draw_graph(sess.graph)
 
