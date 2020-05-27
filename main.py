@@ -1,20 +1,15 @@
-from typing import Tuple, List, Callable, Optional, Any, Type, Dict
+from typing import List, Callable, Optional, Any, Type, Dict
 
 import numpy as np
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.pyplot as plt
 
-
-class Session:
-
-    def __enter__(self):
-        global _graph
-        _graph = nx.DiGraph()
-
-    def __exit__(self, *exc_details):
-        global _graph
-        del _graph
+# TODO: split into files!
+# TODO: write rudimentary trainer
+# TODO: simple example (parity?)
+# TODO: add README
+# TODO: general documentation
 
 
 class Operation:
@@ -89,6 +84,7 @@ class matmul(Operation):
         return np.dot(mat1, mat2)
 
     def backward(self, grad_output):
+        # TODO: implement this!
         pass
 
 
@@ -132,41 +128,26 @@ def feedforward_layer(
     output_size: int,
     input_node: Operation,
     activation: Optional[Operation] = None,
-    # TODO: non-callable initializers, e.g. np arrays?
+    # NOTE: can initialize with a fixed array by using lambda:
     initializer: Callable = np.random.random,
-) -> Tuple[Operation, List[Tuple[Operation]]]:
+) -> Operation:
 
     weights = Variable(initializer((input_size, output_size)), "W")
     biases = Variable(initializer((1, output_size)), "b")
-    mul_node = matmul()
-    add_node = add()
-
-    edges = [
-        (input_node, mul_node),
-        (weights, mul_node),
-        (mul_node, add_node),
-        (biases, add_node),
-    ]
+    mul_node = matmul(input_node, weights)
+    add_node = add(mul_node, biases)
 
     if activation:
-        edges.append((add_node, activation()))
+        return activation(add_node)
 
-    return edges[-1][-1], edges
+    return add_node
 
 
-def mse_loss(
-    prediction_node: Operation, target_node: Operation
-) -> Tuple[Operation, List[Tuple[Operation]]]:
-    diff = minus()
-    square_diff = square()
-    loss_node = reduce_mean()
-    edges = [
-        (prediction_node, diff),
-        (target_node, diff),
-        (diff, square_diff),
-        (square_diff, loss_node),
-    ]
-    return loss_node, edges
+def mse_loss(prediction_node: Operation, target_node: Operation) -> Operation:
+    diff = minus(prediction_node, target_node)
+    square_diff = square(diff)
+    loss_node = reduce_mean(square_diff)
+    return loss_node
 
 
 def get_nodes_by_type(graph: nx.DiGraph, the_type: Type) -> List[Any]:
@@ -181,7 +162,7 @@ def get_variables(graph: nx.DiGraph) -> List[Any]:
     return get_nodes_by_type(graph, Variable)
 
 
-def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]):
+def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]) -> None:
     """ Given a graph with input placeholders and input values, initialize the
     placeholders with the values.
 
@@ -231,48 +212,65 @@ def draw_graph(graph: nx.DiGraph) -> None:
     plt.show()
 
 
+class Session:
+    def __enter__(self):
+        global _graph
+        _graph = nx.DiGraph()
+        self.graph = _graph
+        return self
+
+    def __exit__(self, *exc_details):
+        global _graph
+        del _graph
+
+    def run(self, node: Operation, inputs: Dict[str, np.ndarray] = None) -> None:
+        if inputs:
+            initialize(self.graph, inputs)
+        sorted_graph = nx.topological_sort(self.graph)
+        for op in sorted_graph:
+            op(*[node.value for node in self.graph.predecessors(op)])
+
+
 if __name__ == "__main__":
 
-    with Session():
+    with Session() as sess:
         a = InputNode("a")
         b = InputNode("b")
         diff = minus(a, b)
-        print(_graph.nodes())
-        draw_graph(_graph)
+        draw_graph(sess.graph)
+        sess.run(diff, {"a": np.array([1.0, 2.0]), "b": np.array([3.0, 1.0])})
+        print(diff.value)
 
     # TODO: write formal tests?
-    test_graph = nx.DiGraph()
-    a = InputNode("a")
-    b = InputNode("b")
-    diff = minus()
-    add_node = add()
-    c = InputNode("c")
-    test_graph.add_edges_from(((a, diff), (b, diff), (diff, add_node), (c, add_node)))
-    run(
-        test_graph,
-        {
-            "a": np.array([1.0, 2.0]),
-            "b": np.array([2.0, 1.0]),
-            "c": np.array([2.0, 1.0]),
-        },
-    )
-    print(diff.value)
-    draw_graph(test_graph)
-    backward(test_graph, add_node)
-    print({node._name(): node.grad for node in test_graph})
+    with Session() as sess:
+        a = InputNode("a")
+        b = InputNode("b")
+        diff = minus(a, b)
+        c = InputNode("c")
+        add_node = add(diff, c)
+        sess.run(
+            add_node,
+            {
+                "a": np.array([1.0, 2.0]),
+                "b": np.array([2.0, 1.0]),
+                "c": np.array([2.0, 1.0]),
+            },
+        )
+        print(diff.value)
+        draw_graph(sess.graph)
+        backward(sess.graph, add_node)
+        print({node._name(): node.grad for node in sess.graph})
 
-    graph = nx.DiGraph()
+    with Session() as sess:
+        x = InputNode("x")
+        ff1 = feedforward_layer(2, 1, x, relu)
+        ff2 = feedforward_layer(1, 1, ff1, relu)
 
-    x = InputNode("x")
-    ff_out_node, ff_edges = feedforward_layer(2, 1, x, relu)
-    ff2_out_node, ff2_edges = feedforward_layer(1, 1, ff_out_node, relu)
+        y = InputNode("y")
+        loss_node = mse_loss(ff2, y)
 
-    y = InputNode("y")
-    loss_node, loss_edges = mse_loss(ff2_out_node, y)
+        draw_graph(sess.graph)
 
-    graph.add_edges_from(ff_edges + ff2_edges + loss_edges)
-    draw_graph(graph)
+        sess.run(loss_node, {"x": np.array([[2.0, 2.0]]), "y": np.array([[5.0, 6.0]])})
 
-    run(graph, {"x": np.array([[2.0, 2.0]]), "y": np.array([[5.0, 6.0]])})
-
-    print(loss_node.value)
+        print(loss_node.value)
