@@ -6,11 +6,27 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.pyplot as plt
 
 
+class Session:
+
+    def __enter__(self):
+        global _graph
+        _graph = nx.DiGraph()
+
+    def __exit__(self, *exc_details):
+        global _graph
+        del _graph
+
+
 class Operation:
-    def __init__(self, value=None, grad=None, name=None):
+    def __init__(self, *inputs, value=None, grad=None, name=None):
+        # set values
         self.value = value
         self.grad = grad
         self.name = name
+        # add node and edges to graph
+        _graph.add_node(self)
+        for input_node in inputs:
+            _graph.add_edge(input_node, self)
 
     def forward(self, *args):
         raise NotImplementedError
@@ -33,7 +49,6 @@ class LeafOperation(Operation):
         return self.value
 
     def backward(self):
-        # TODO: better method here?
         pass
 
 
@@ -186,7 +201,8 @@ def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None) -> None:
 
 
 def backward(graph: nx.DiGraph, node: Operation) -> None:
-    # TODO: raise error if no value?
+    # TODO: instead, reverse the graph, get subgraph at node, topological sort
+    # the result of that
     sorted_graph = nx.topological_sort(graph)
     reversed_order = reversed(list(sorted_graph))
     node.grad = np.ones(node.value.shape)
@@ -216,6 +232,13 @@ def draw_graph(graph: nx.DiGraph) -> None:
 
 
 if __name__ == "__main__":
+
+    with Session():
+        a = InputNode("a")
+        b = InputNode("b")
+        diff = minus(a, b)
+        print(_graph.nodes())
+        draw_graph(_graph)
 
     # TODO: write formal tests?
     test_graph = nx.DiGraph()
