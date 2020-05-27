@@ -162,6 +162,7 @@ def get_variables(graph: nx.DiGraph) -> List[Any]:
     return get_nodes_by_type(graph, Variable)
 
 
+# TODO: should initialize and backward be in session?
 def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]) -> None:
     """ Given a graph with input placeholders and input values, initialize the
     placeholders with the values.
@@ -171,14 +172,6 @@ def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]) -> None:
     input_nodes = get_input_nodes(graph)
     for node in input_nodes:
         node.value = inputs[node.name]
-
-
-def run(graph: nx.DiGraph, inputs: Dict[str, np.ndarray] = None) -> None:
-    if inputs:
-        initialize(graph, inputs)
-    sorted_graph = nx.topological_sort(graph)
-    for op in sorted_graph:
-        op(*[node.value for node in graph.predecessors(op)])
 
 
 def backward(graph: nx.DiGraph, node: Operation) -> None:
