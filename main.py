@@ -177,7 +177,8 @@ def initialize(graph: nx.DiGraph, inputs: Dict[str, np.ndarray]) -> None:
 def backward(graph: nx.DiGraph, node: Operation) -> None:
     # TODO: instead, reverse the graph, get subgraph at node, topological sort
     # the result of that
-    sorted_graph = nx.topological_sort(graph)
+    subgraph = get_subgraph_above(graph, node)
+    sorted_graph = nx.topological_sort(subgraph)
     reversed_order = reversed(list(sorted_graph))
     node.grad = np.ones(node.value.shape)
     for op in reversed_order:
@@ -205,6 +206,12 @@ def draw_graph(graph: nx.DiGraph) -> None:
     plt.show()
 
 
+def get_subgraph_above(graph: nx.DiGraph, node: Any):
+    """ Given a digraph and a node, get the subgraph containing the node and
+    all of its ancestors. """
+    return nx.subgraph(graph, set([node]) | nx.ancestors(graph, node))
+
+
 class Session:
     def __enter__(self):
         global _graph
@@ -217,11 +224,12 @@ class Session:
         del _graph
 
     def run(self, node: Operation, inputs: Dict[str, np.ndarray] = None) -> None:
+        subgraph = get_subgraph_above(self.graph, node)
         if inputs:
-            initialize(self.graph, inputs)
-        sorted_graph = nx.topological_sort(self.graph)
+            initialize(subgraph, inputs)
+        sorted_graph = nx.topological_sort(subgraph)
         for op in sorted_graph:
-            op(*[node.value for node in self.graph.predecessors(op)])
+            op(*[node.value for node in subgraph.predecessors(op)])
 
 
 if __name__ == "__main__":
