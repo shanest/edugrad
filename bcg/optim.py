@@ -6,13 +6,11 @@ from .tensor import Variable
 
 
 class Optimizer:
-
     def step(self) -> None:
         raise NotImplementedError
 
 
 class SGD(Optimizer):
-
     def __init__(self, params: Iterable[Variable], lr=1e-4):
         self.lr = lr
         self._cur_step = 0

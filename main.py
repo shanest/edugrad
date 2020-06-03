@@ -6,8 +6,6 @@ import bcg.nn as nn
 
 import util
 
-# TODO: write rudimentary trainer
-# TODO: simple example (parity?)
 # TODO: add README
 # TODO: general documentation
 
@@ -32,10 +30,11 @@ if __name__ == "__main__":
     num_epochs = 20
 
     inputs = np.array(list(itertools.product([0, 1], repeat=input_size))).astype(float)
-    # shuffle data before splitting
+    # shuffle inputs before computing targets and splitting
     np.random.shuffle(inputs)
     # y = sum(x)/2
     targets = np.apply_along_axis(lambda row: np.sum(row) / 2, 1, inputs)[:, np.newaxis]
+
     train_split = int(0.75 * len(inputs))
     train_inputs, train_targets = inputs[:train_split], targets[:train_split]
     test_inputs, test_targets = inputs[train_split:], targets[train_split:]

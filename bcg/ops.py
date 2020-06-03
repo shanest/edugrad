@@ -1,12 +1,14 @@
 from typing import List, Callable
 
 import numpy as np
-from .tensor import Tensor, Variable
+from .tensor import Tensor
 
 
 class Operation:
     @staticmethod
-    def forward(ctx: List[np.ndarray], *inputs: List[np.ndarray], **kwargs) -> np.ndarray:
+    def forward(
+        ctx: List[np.ndarray], *inputs: List[np.ndarray], **kwargs
+    ) -> np.ndarray:
         raise NotImplementedError
 
     @staticmethod
@@ -25,7 +27,9 @@ def to_function(op: Operation, name: str) -> Callable[[List[Tensor]], Tensor]:
     def fn(*inputs: List[Tensor], **kwargs) -> Tensor:
         ctx = []
         new_tensor = Tensor(
-            op.forward(ctx, *[tensor.value for tensor in inputs], **kwargs), inputs, name
+            op.forward(ctx, *[tensor.value for tensor in inputs], **kwargs),
+            inputs,
+            name,
         )
 
         def _backward():
@@ -127,6 +131,7 @@ reduce_mean = to_function(ReduceMean, "mean")
 
 class CopyRows(Operation):
     """ Copies a (1, dim) array into (num, dim) """
+
     def forward(ctx, value, num=1):
         return np.tile(value, (num, 1))
 
