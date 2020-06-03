@@ -124,6 +124,13 @@ class ReduceMean(Operation):
 
 reduce_mean = to_function(ReduceMean, "mean")
 
+
+def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
+    diff = minus(predicted, targets)
+    squared = square(diff)
+    return reduce_mean(squared)
+
+
 """
 # convert every Operation into a callable function, with its name lowercased
 # TODO: decorator for getting doc-string etc?

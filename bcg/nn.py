@@ -15,16 +15,16 @@ class Module:
             param.grad = np.zeros(param.value.shape)
 
     def parameters(self):
-        params = self._params
+        params = list(self._params.values())
         for module in self._modules:
             params.extend(self._modules[module].parameters())
         return params
 
     def __setattr__(self, key, value):
         """ Register modules and params when assigned. """
-        if type(value) == Variable:
+        if isinstance(value, Variable):
             self._params[key] = value
-        elif type(value) == Module:
+        elif isinstance(value, Module):
             self._modules[key] = value
         super(Module, self).__setattr__(key, value)
 
