@@ -2,7 +2,7 @@
 
 from typing import Iterable
 
-from ops import Variable
+from .tensor import Variable
 
 
 class Optimizer:
