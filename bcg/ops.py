@@ -6,7 +6,7 @@ from .tensor import Tensor, Variable
 
 class Operation:
     @staticmethod
-    def forward(ctx: List[np.ndarray], *inputs: List[np.ndarray]) -> np.ndarray:
+    def forward(ctx: List[np.ndarray], *inputs: List[np.ndarray], **kwargs) -> np.ndarray:
         raise NotImplementedError
 
     @staticmethod
@@ -22,10 +22,10 @@ def to_function(op: Operation, name: str) -> Callable[[List[Tensor]], Tensor]:
     including populating the Tensors' _backward methods, when called.
     """
 
-    def fn(*inputs: List[Tensor]) -> Tensor:
+    def fn(*inputs: List[Tensor], **kwargs) -> Tensor:
         ctx = []
         new_tensor = Tensor(
-            op.forward(ctx, *[tensor.value for tensor in inputs]), inputs, name
+            op.forward(ctx, *[tensor.value for tensor in inputs], **kwargs), inputs, name
         )
 
         def _backward():
@@ -123,6 +123,19 @@ class ReduceMean(Operation):
 
 
 reduce_mean = to_function(ReduceMean, "mean")
+
+
+class CopyRows(Operation):
+    """ Copies a (1, dim) array into (num, dim) """
+    def forward(ctx, value, num=1):
+        return np.tile(value, (num, 1))
+
+    def backward(ctx, grad_output):
+        # all rows of grad_output will be the same, so get the first
+        return grad_output[0][:, np.newaxis]
+
+
+copy_rows = to_function(CopyRows, "copy")
 
 
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:

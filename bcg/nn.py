@@ -38,10 +38,10 @@ class Linear(Module):
     ):
         super(Linear, self).__init__()
         self.weights = Variable(initializer((input_size, output_size)), "W")
-        # TODO: biases introduce lots of complication around shape, so don't include for now
-        # self.biases = Variable(initializer((1, output_size)), "b")
+        self.biases = Variable(initializer((1, output_size)), "b")
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)
-        # return add(mul_note, self.biases)
-        return mul_node
+        # NOTE: this is a hack-ish way of handling shape issues with biases
+        expanded_biases = ops.copy_rows(self.biases, num=inputs.value.shape[0])
+        return ops.add(mul_node, expanded_biases)
