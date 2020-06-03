@@ -15,9 +15,10 @@ class SGD(Optimizer):
 
     def __init__(self, params: Iterable[Variable], lr=1e-4):
         self.lr = lr
-        self.step = 0
+        self._cur_step = 0
         self.params = params
 
     def step(self):
         for param in self.params:
             param.value -= self.lr * param.grad
+        self._cur_step += 1

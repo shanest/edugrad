@@ -38,8 +38,9 @@ class Linear(Module):
     ):
         super(Linear, self).__init__()
         self.weights = Variable(initializer((input_size, output_size)), "W")
-        self.biases = Variable(initializer((1, output_size)), "b")
+        # TODO: biases introduce lots of complication around shape, so don't include for now
+        # self.biases = Variable(initializer((1, output_size)), "b")
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)
-        return ops.add(mul_node, self.biases)
+        return mul_node

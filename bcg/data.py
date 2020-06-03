@@ -24,6 +24,7 @@ class BatchIterator(DataIterator):
         starts = np.arange(0, len(inputs), self.batch_size)
         if self.shuffle:
             np.random.shuffle(starts)
+        self.num_batches = len(starts)
 
         for start in starts:
             end = start + self.batch_size

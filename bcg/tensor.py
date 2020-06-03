@@ -15,7 +15,7 @@ class Tensor:
         backprop(self)
 
     def _backward(self) -> None:
-        raise NotImplementedError("This Tensor has no _backward implemented")
+        pass
 
 
 class Variable(Tensor):
