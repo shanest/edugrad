@@ -43,4 +43,5 @@ class Linear(Module):
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)
+        # return add(mul_note, self.biases)
         return mul_node
