@@ -1,7 +1,7 @@
 from typing import Callable, List
 import numpy as np
 
-from .tensor import Variable, Tensor
+from .tensor import Tensor
 from . import ops
 
 
@@ -22,7 +22,7 @@ class Module:
 
     def __setattr__(self, key, value):
         """ Register modules and params when assigned. """
-        if isinstance(value, Variable):
+        if isinstance(value, Tensor):
             self._params[key] = value
         elif isinstance(value, Module):
             self._modules[key] = value
@@ -37,8 +37,8 @@ class Linear(Module):
         self, input_size, output_size, initializer: Callable = np.random.random
     ):
         super(Linear, self).__init__()
-        self.weights = Variable(initializer((input_size, output_size)), "W")
-        self.biases = Variable(initializer((1, output_size)), "b")
+        self.weights = Tensor(initializer((input_size, output_size)), name="W")
+        self.biases = Tensor(initializer((1, output_size)), name="b")
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)

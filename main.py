@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     model = MLP(input_size, 1)
     optimizer = bcg.optim.SGD(model.parameters())
-    train_iterator = bcg.data.BatchIterator()
+    train_iterator = bcg.data.BatchIterator(batch_size=batch_size)
 
     for epoch in range(num_epochs):
         total_loss = 0.0

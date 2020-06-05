@@ -18,14 +18,6 @@ class Tensor:
         pass
 
 
-class Variable(Tensor):
-    def __init__(self, value, name=None):
-        super(Variable, self).__init__(value, name=name)
-
-    def _backward(self) -> None:
-        pass
-
-
 def get_graph_above(node: Tensor) -> nx.DiGraph:
     graph = nx.DiGraph()
     visited = set()

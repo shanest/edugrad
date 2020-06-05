@@ -2,7 +2,7 @@
 
 from typing import Iterable
 
-from .tensor import Variable
+from .tensor import Tensor
 
 
 class Optimizer:
@@ -11,7 +11,7 @@ class Optimizer:
 
 
 class SGD(Optimizer):
-    def __init__(self, params: Iterable[Variable], lr=1e-4):
+    def __init__(self, params: Iterable[Tensor], lr=1e-4):
         self.lr = lr
         self._cur_step = 0
         self.params = params
