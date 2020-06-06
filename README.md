@@ -5,6 +5,6 @@ This is a library intended for pedagogical purposes illustrating a very minimal 
 * Simple `forward`/`backward` for operations.
 * Dynamic computation graphs, built as operations are run.
 The library has been inspired by several other similar projects.  Specific acknowledgments are in the source where appropriate.
-* [https://github.com/karpathy/micrograd](`micrograd`) by Karpathy
-* [https://github.com/mattjj/autodidact](`autodidact`): a pedagogical implementation of `autograd`
-* [https://github.com/joelgrus/joelnet](`joelnet`)
+* [`micrograd`](https://github.com/karpathy/micrograd) by Karpathy
+* [`autodidact`](https://github.com/mattjj/autodidact): a pedagogical implementation of `autograd`
+* [`joelnet`](https://github.com/joelgrus/joelnet)
