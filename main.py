@@ -29,6 +29,7 @@ if __name__ == "__main__":
     batch_size = 32
     num_epochs = 20
 
+    # inputs = all binary sequences of length input_size
     inputs = np.array(list(itertools.product([0, 1], repeat=input_size))).astype(float)
     # shuffle inputs before computing targets and splitting
     np.random.shuffle(inputs)
