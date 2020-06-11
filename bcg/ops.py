@@ -16,7 +16,7 @@ class Operation:
         raise NotImplementedError
 
 
-def to_function(op: Operation, name: str) -> Callable[[List[Tensor]], Tensor]:
+def tensor_op(op: Operation) -> Callable[[List[Tensor]], Tensor]:
     """
     Takes an operation, and turns it into a callable function on Tensors.
 
@@ -29,7 +29,7 @@ def to_function(op: Operation, name: str) -> Callable[[List[Tensor]], Tensor]:
         new_tensor = Tensor(
             op.forward(ctx, *[tensor.value for tensor in inputs], **kwargs),
             inputs,
-            name,
+            op.__name__,
         )
 
         def _backward():
@@ -43,7 +43,8 @@ def to_function(op: Operation, name: str) -> Callable[[List[Tensor]], Tensor]:
     return fn
 
 
-class Add(Operation):
+@tensor_op
+class add(Operation):
     def forward(ctx, a, b):
         return a + b
 
@@ -51,10 +52,8 @@ class Add(Operation):
         return grad_output, grad_output
 
 
-add = to_function(Add, "+")
-
-
-class Minus(Operation):
+@tensor_op
+class minus(Operation):
     def forward(ctx, a, b):
         return a - b
 
@@ -62,10 +61,8 @@ class Minus(Operation):
         return grad_output, -grad_output
 
 
-minus = to_function(Minus, "-")
-
-
-class MatMul(Operation):
+@tensor_op
+class matmul(Operation):
     def forward(ctx, mat1, mat2):
         ctx.append(mat1)
         ctx.append(mat2)
@@ -76,10 +73,8 @@ class MatMul(Operation):
         return grad_output @ mat2.T, mat1.T @ grad_output
 
 
-matmul = to_function(MatMul, "matmul")
-
-
-class Square(Operation):
+@tensor_op
+class square(Operation):
     def forward(ctx, a):
         return a ** 2
 
@@ -87,10 +82,8 @@ class Square(Operation):
         return 2 * grad_output
 
 
-square = to_function(Square, "square")
-
-
-class ReLU(Operation):
+@tensor_op
+class relu(Operation):
     def forward(ctx, value):
         new_val = np.maximum(0, value)
         ctx.append(new_val)
@@ -101,10 +94,8 @@ class ReLU(Operation):
         return (value > 0).astype(float)
 
 
-relu = to_function(ReLU, "relu")
-
-
-class ReduceSum(Operation):
+@tensor_op
+class reduce_sum(Operation):
     def forward(ctx, value):
         ctx.append(value)
         return np.sum(value)
@@ -113,10 +104,8 @@ class ReduceSum(Operation):
         return np.ones(ctx[-1].shape) * grad_output
 
 
-reduce_sum = to_function(ReduceSum, "sum")
-
-
-class ReduceMean(Operation):
+@tensor_op
+class reduce_mean(Operation):
     def forward(ctx, value):
         ctx.append(value)
         return np.mean(value)
@@ -126,10 +115,8 @@ class ReduceMean(Operation):
         return np.ones(shape) * grad_output / np.prod(shape)
 
 
-reduce_mean = to_function(ReduceMean, "mean")
-
-
-class CopyRows(Operation):
+@tensor_op
+class copy_rows(Operation):
     """ Copies a (1, dim) array into (num, dim) """
 
     def forward(ctx, value, num=1):
@@ -138,9 +125,6 @@ class CopyRows(Operation):
     def backward(ctx, grad_output):
         # all rows of grad_output will be the same, so get the first
         return grad_output[0][:, np.newaxis]
-
-
-copy_rows = to_function(CopyRows, "copy")
 
 
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
