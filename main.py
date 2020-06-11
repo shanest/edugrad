@@ -6,9 +6,6 @@ import bcg.nn as nn
 
 import util
 
-# TODO: add README
-# TODO: general documentation
-
 
 class MLP(nn.Module):
     def __init__(self, input_size, output_size):
