@@ -131,13 +131,3 @@ def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
     diff = minus(predicted, targets)
     squared = square(diff)
     return reduce_mean(squared)
-
-
-"""
-# convert every Operation into a callable function, with its name lowercased
-# TODO: decorator for getting doc-string etc?
-module_attrs = globals()
-for the_op in Operation.__subclasses__():
-    name = the_op.__name__.lower()
-    module_attrs[name] = to_function(the_op, name)
-"""

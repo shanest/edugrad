@@ -1,4 +1,5 @@
-""" See joelnet/data.py by Joel Grus at https://github.com/joelgrus/joelnet/blob/master/joelnet/data.py """
+""" See joelnet/data.py by Joel Grus at
+https://github.com/joelgrus/joelnet/blob/master/joelnet/data.py """
 
 from typing import NamedTuple, Iterator
 
