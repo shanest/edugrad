@@ -123,8 +123,7 @@ class copy_rows(Operation):
         return np.tile(value, (num, 1))
 
     def backward(ctx, grad_output):
-        # all rows of grad_output will be the same, so get the first
-        return grad_output[0][:, np.newaxis]
+        return np.sum(grad_output, axis=0)
 
 
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
