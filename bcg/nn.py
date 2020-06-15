@@ -14,13 +14,16 @@ class Module:
         for param in self.parameters():
             param.grad = np.zeros(param.value.shape)
 
-    def parameters(self):
+    def parameters(self) -> List[Tensor]:
         params = list(self._params.values())
         for module in self._modules:
             params.extend(self._modules[module].parameters())
         return params
 
-    def __setattr__(self, key, value):
+    def forward(self, *inputs: List[Tensor]) -> Tensor:
+        raise NotImplementedError
+
+    def __setattr__(self, key, value) -> None:
         """ Register modules and params when assigned. """
         if isinstance(value, Tensor):
             self._params[key] = value
