@@ -56,4 +56,4 @@ if __name__ == "__main__":
         model(bcg.Tensor(test_inputs, name="x")), bcg.Tensor(test_targets, name="y")
     )
     print(f"Test loss: {loss.value}")
-    util.draw_graph(bcg.tensor.get_graph_above(loss))
+    util.draw_graph(loss.get_graph_above())

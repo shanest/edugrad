@@ -12,31 +12,29 @@ class Tensor:
 
     def backward(self) -> None:
         self.grad = np.ones(self.value.shape)
-        backprop(self)
+        self.backprop()
 
     def _backward(self) -> None:
         pass
 
+    def get_graph_above(self) -> nx.DiGraph:
+        graph = nx.DiGraph()
+        visited = set()
 
-def get_graph_above(node: Tensor) -> nx.DiGraph:
-    graph = nx.DiGraph()
-    visited = set()
+        def visit(value: Tensor):
+            if value not in visited:
+                for parent in value.parents:
+                    graph.add_edge(parent, value)
+                    visit(parent)
+            visited.add(value)
 
-    def visit(value: Tensor):
-        if value not in visited:
-            for parent in value.parents:
-                graph.add_edge(parent, value)
-                visit(parent)
-        visited.add(value)
+        visit(self)
+        return graph
 
-    visit(node)
-    return graph
-
-
-def backprop(node: Tensor) -> None:
-    # NOTE: building a graph, then sorting, is not maximally efficient
-    # but the graph can be used for visualization etc
-    graph = get_graph_above(node)
-    reverse_topological = reversed(list(nx.topological_sort(graph)))
-    for tensor in reverse_topological:
-        tensor._backward()
+    def backprop(self) -> None:
+        # NOTE: building a graph, then sorting, is not maximally efficient
+        # but the graph can be used for visualization etc
+        graph = self.get_graph_above()
+        reverse_topological = reversed(list(nx.topological_sort(graph)))
+        for tensor in reverse_topological:
+            tensor._backward()
