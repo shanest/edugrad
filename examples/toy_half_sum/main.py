@@ -1,8 +1,8 @@
 import itertools
 import numpy as np
 
-import bcg
-import bcg.nn as nn
+import edugrad
+import edugrad.nn as nn
 
 from .. import util
 
@@ -14,8 +14,8 @@ class MLP(nn.Module):
         self.output = nn.Linear(32, output_size)
 
     def forward(self, inputs):
-        hidden = bcg.relu(self.fc1(inputs))
-        hidden = bcg.relu(self.fc2(hidden))
+        hidden = edugrad.relu(self.fc1(inputs))
+        hidden = edugrad.relu(self.fc2(hidden))
         return self.output(hidden)
 
 
@@ -37,23 +37,23 @@ if __name__ == "__main__":
     test_inputs, test_targets = inputs[train_split:], targets[train_split:]
 
     model = MLP(input_size, 1)
-    optimizer = bcg.optim.SGD(model.parameters())
-    train_iterator = bcg.data.BatchIterator(batch_size=batch_size)
+    optimizer = edugrad.optim.SGD(model.parameters())
+    train_iterator = edugrad.data.BatchIterator(batch_size=batch_size)
 
     for epoch in range(num_epochs):
         total_loss = 0.0
         for batch in train_iterator(inputs, targets):
             model.zero_grad()
             predicted = model(batch.inputs)
-            loss = bcg.mse_loss(predicted, batch.targets)
+            loss = edugrad.mse_loss(predicted, batch.targets)
             loss.backward()
             optimizer.step()
             total_loss += loss.value
         print(f"Epoch {epoch} loss: {total_loss / train_iterator.num_batches}")
 
-    test_predictions = model(bcg.Tensor(test_inputs, name="x"))
-    loss = bcg.mse_loss(
-        test_predictions, bcg.Tensor(test_targets, name="y")
+    test_predictions = model(edugrad.Tensor(test_inputs, name="x"))
+    loss = edugrad.mse_loss(
+        test_predictions, edugrad.Tensor(test_targets, name="y")
     )
     print(f"Test loss: {loss.value}")
     util.draw_graph(loss.get_graph_above())

@@ -1,4 +1,4 @@
-# basic-computational-graph
+# edugrad
  
 This is a library intended for pedagogical purposes illustrating a very minimal implementation of dynamic computational graphs with reverse-mode differentiation (backpropagation) for computing gradients.  Three guidelines motivate design choices made in the implementation:
 * Mimicking PyTorch's API as closely as possible.
