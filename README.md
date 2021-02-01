@@ -20,9 +20,3 @@ There are a few important data structures:
 * `Tensor`: this is a wrapper around a numpy array (stored in `.value`), which corresponds to a node in a computation graph, storing information like its parents (if any) and a backward method.
 * `Operator`: an operator implements the `forward`/`backward` API and operates directly on numpy arrays.  A decorator `@tensor_op` converts an `Operator` into a method that can be directly called on `Tensor` arguments, which will build the graph dynamically.
 * `nn.Module`: as in PyTorch, these are wrappers for graphs that keep track of parameters, sub-modules, etc.
-
-## TODO
-
-* Document the code properly!
-* Split training out of `main` into a separate trainer?
-* Remove `networkx` dependency altogether?
