@@ -4,7 +4,7 @@ import numpy as np
 import edugrad
 import edugrad.nn as nn
 
-from .. import util
+import util
 
 class MLP(nn.Module):
     def __init__(self, input_size, output_size):
