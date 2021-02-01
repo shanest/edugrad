@@ -12,7 +12,7 @@ The library has been inspired by several other similar projects.  Specific ackno
 
 ## Usage
 
-`main.py` exhibits a basic use case of defining a feed-forward neural network (multi-layer perceptron) to learn a basic function (in this case, `y = sum(x)/2` where `x` is a binary vector).  You can run it by using `python main.py` from an environment with the packages from `requirements.txt`.
+In `examples/toy_half_sum`, you will find a basic use case. `main.py` exhibits a basic use case of defining a feed-forward neural network (multi-layer perceptron) to learn a basic function (in this case, `y = sum(x)/2` where `x` is a binary vector).  You can run it by using `python main.py` from an environment with the packages from `requirements.txt`.
 
 ## Basics
 
