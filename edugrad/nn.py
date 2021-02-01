@@ -11,10 +11,12 @@ class Module:
         self._modules = dict()
 
     def zero_grad(self) -> None:
+        """ Set gradients of all parameters to zero. """
         for param in self.parameters():
             param.grad = np.zeros(param.value.shape)
 
     def parameters(self) -> List[Tensor]:
+        """ Return a list of all parameters of this module. """
         params = list(self._params.values())
         for module in self._modules:
             params.extend(self._modules[module].parameters())
@@ -37,14 +39,22 @@ class Module:
 
 class Linear(Module):
     def __init__(
-        self, input_size, output_size, initializer: Callable = np.random.random
+        self,
+        input_size,
+        output_size,
+        initializer: Callable = np.random.random,
+        bias=True,
     ):
         super(Linear, self).__init__()
         self.weights = Tensor(initializer((input_size, output_size)), name="W")
-        self.biases = Tensor(initializer((1, output_size)), name="b")
+        self.bias = bias
+        if self.bias:
+            self.biases = Tensor(initializer((1, output_size)), name="b")
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)
-        # NOTE: this is a hack-ish way of handling shape issues with biases
-        expanded_biases = ops.copy_rows(self.biases, num=inputs.value.shape[0])
-        return ops.add(mul_node, expanded_biases)
+        if self.bias:
+            # NOTE: this is a hack-ish way of handling shape issues with biases
+            expanded_biases = ops.copy_rows(self.biases, num=inputs.value.shape[0])
+            return ops.add(mul_node, expanded_biases)
+        return mul_node
