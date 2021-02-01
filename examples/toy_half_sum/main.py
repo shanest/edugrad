@@ -4,8 +4,7 @@ import numpy as np
 import bcg
 import bcg.nn as nn
 
-import util
-
+from .. import util
 
 class MLP(nn.Module):
     def __init__(self, input_size, output_size):
@@ -52,8 +51,9 @@ if __name__ == "__main__":
             total_loss += loss.value
         print(f"Epoch {epoch} loss: {total_loss / train_iterator.num_batches}")
 
+    test_predictions = model(bcg.Tensor(test_inputs, name="x"))
     loss = bcg.mse_loss(
-        model(bcg.Tensor(test_inputs, name="x")), bcg.Tensor(test_targets, name="y")
+        test_predictions, bcg.Tensor(test_targets, name="y")
     )
     print(f"Test loss: {loss.value}")
     util.draw_graph(loss.get_graph_above())
