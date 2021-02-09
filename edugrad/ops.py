@@ -79,7 +79,7 @@ class square(Operation):
         return a ** 2
 
     def backward(ctx, grad_output):
-        return 2 * grad_output
+        return [2 * grad_output]
 
 
 @tensor_op
@@ -91,7 +91,7 @@ class relu(Operation):
 
     def backward(ctx, grad_output):
         value = ctx[-1]
-        return (value > 0).astype(float)
+        return [(value > 0).astype(float)]
 
 
 @tensor_op
@@ -101,7 +101,7 @@ class reduce_sum(Operation):
         return np.sum(value)
 
     def backward(ctx, grad_output):
-        return np.ones(ctx[-1].shape) * grad_output
+        return [np.ones(ctx[-1].shape) * grad_output]
 
 
 @tensor_op
@@ -112,7 +112,7 @@ class reduce_mean(Operation):
 
     def backward(ctx, grad_output):
         shape = ctx[-1].shape
-        return np.ones(shape) * grad_output / np.prod(shape)
+        return [np.ones(shape) * grad_output / np.prod(shape)]
 
 
 @tensor_op

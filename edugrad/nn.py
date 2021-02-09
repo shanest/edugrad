@@ -1,3 +1,26 @@
+""" Copyright 2020-2021 Shane Steinert-Threlkeld
+
+    This file is part of edugrad.
+
+    edugrad is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    edugrad is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with edugrad.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
+"""Defines the Module class, basic building block of neural networks.
+
+Also includes a Linear Module, for computing xW + b.
+"""
+
 from typing import Callable, List
 import numpy as np
 
@@ -11,12 +34,12 @@ class Module:
         self._modules = dict()
 
     def zero_grad(self) -> None:
-        """ Set gradients of all parameters to zero. """
+        """Set gradients of all parameters to zero. """
         for param in self.parameters():
             param.grad = np.zeros(param.value.shape)
 
     def parameters(self) -> List[Tensor]:
-        """ Return a list of all parameters of this module. """
+        """Return a list of all parameters of this module. """
         params = list(self._params.values())
         for module in self._modules:
             params.extend(self._modules[module].parameters())
@@ -26,7 +49,7 @@ class Module:
         raise NotImplementedError
 
     def __setattr__(self, key, value) -> None:
-        """ Register modules and params when assigned. """
+        """Register modules and params when assigned. """
         if isinstance(value, Tensor):
             self._params[key] = value
         elif isinstance(value, Module):

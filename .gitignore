@@ -5,3 +5,4 @@ dist
 *.egg-info
 *.sh
 TODO.txt
+.DS_Store
