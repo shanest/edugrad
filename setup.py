@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setuptools.setup(
     name="edugrad",
-    version="0.0.2",
+    version="0.0.3",
     author="Shane Steinert-Threlkeld",
     author_email="ssshanest@gmail.com",
     description="Basic computation graph, for pedagogical purposes",
