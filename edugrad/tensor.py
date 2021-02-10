@@ -95,3 +95,9 @@ class Tensor:
 
     def __add__(self, other):
         return ops.add(self, other)
+
+    def __radd__(self, other):
+        return ops.add(other, self)
+
+    def __sub__(self, other):
+        return ops.minus(self, other)
