@@ -29,6 +29,19 @@ from . import ops
 
 
 class Module:
+    """Modules are components of computation graphs.
+
+    They contain parameters (Tensors) and/or sub-modules.
+
+    Most importantly, a Module has a `forward` method, which implements the
+    forward pass of a computation graph.  This forward pass should use `ops`
+    which ensures that the computation graph gets built dynamically, so that
+    `backward` can be used to compute gradients.
+
+    Attributes:
+        _params: dictionary of Tensors, trainable Tensor parameters
+        _modules: sub-modules of this module
+    """
     def __init__(self):
         self._params = dict()
         self._modules = dict()
@@ -63,11 +76,22 @@ class Module:
 class Linear(Module):
     def __init__(
         self,
-        input_size,
-        output_size,
+        input_size: int,
+        output_size: int,
         initializer: Callable = np.random.random,
-        bias=True,
+        bias: bool = True,
     ):
+    """A Linear module computes defines weights W, optionally biases b, and
+    computers wX + b.
+
+    Weight vector will have shape (input size, output size)
+
+    Args:
+        input_size: dimension of input vectors
+        output_size: dimension of output vectors
+        initializer: how to initialize weights and biases
+        bias: whether or not to include the bias term; not needed for, e.g. embeddings
+    """
         super(Linear, self).__init__()
         self.weights = Tensor(initializer((input_size, output_size)), name="W")
         self.bias = bias

@@ -9,10 +9,28 @@ class Operation:
     def forward(
         ctx: List[np.ndarray], *inputs: List[np.ndarray], **kwargs
     ) -> np.ndarray:
+    """Forward pass of an operation.
+
+    Args:
+        ctx: empty list of arrays; can be used to store values for backward pass
+        inputs: arguments to this operation
+
+    Returns:
+        output of the operation, assumed to be one numpy array
+    """
         raise NotImplementedError
 
     @staticmethod
     def backward(ctx: List[np.ndarray], grad_output: np.ndarray) -> List[np.ndarray]:
+    """Backward pass of an op, returns dL / dx for each x in parents of this op.
+
+    Args:
+        ctx: stored values from the forward pass
+        grad_output: dL/dv, where v is output of this node
+
+    Returns:
+        a _list_ of arrays, dL/dx, for each x that was input to this op
+    """
         raise NotImplementedError
 
 
@@ -127,6 +145,7 @@ class copy_rows(Operation):
 
 
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
+    """Computes mean( (yhat - y)^2 ) """
     diff = minus(predicted, targets)
     squared = square(diff)
     return reduce_mean(squared)
