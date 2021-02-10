@@ -1,7 +1,7 @@
 from typing import List, Callable
 
 import numpy as np
-from .tensor import Tensor
+from edugrad.tensor import Tensor
 
 
 class Operation:
@@ -9,28 +9,28 @@ class Operation:
     def forward(
         ctx: List[np.ndarray], *inputs: List[np.ndarray], **kwargs
     ) -> np.ndarray:
-    """Forward pass of an operation.
+        """Forward pass of an operation.
 
-    Args:
-        ctx: empty list of arrays; can be used to store values for backward pass
-        inputs: arguments to this operation
+        Args:
+            ctx: empty list of arrays; can be used to store values for backward pass
+            inputs: arguments to this operation
 
-    Returns:
-        output of the operation, assumed to be one numpy array
-    """
+        Returns:
+            output of the operation, assumed to be one numpy array
+        """
         raise NotImplementedError
 
     @staticmethod
     def backward(ctx: List[np.ndarray], grad_output: np.ndarray) -> List[np.ndarray]:
-    """Backward pass of an op, returns dL / dx for each x in parents of this op.
+        """Backward pass of an op, returns dL / dx for each x in parents of this op.
 
-    Args:
-        ctx: stored values from the forward pass
-        grad_output: dL/dv, where v is output of this node
+        Args:
+            ctx: stored values from the forward pass
+            grad_output: dL/dv, where v is output of this node
 
-    Returns:
-        a _list_ of arrays, dL/dx, for each x that was input to this op
-    """
+        Returns:
+            a _list_ of arrays, dL/dx, for each x that was input to this op
+        """
         raise NotImplementedError
 
 

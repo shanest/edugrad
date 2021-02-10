@@ -24,8 +24,8 @@ Also includes a Linear Module, for computing xW + b.
 from typing import Callable, List
 import numpy as np
 
-from .tensor import Tensor
-from . import ops
+from edugrad.tensor import Tensor
+import edugrad.ops as ops
 
 
 class Module:

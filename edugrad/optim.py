@@ -20,7 +20,7 @@
 
 from typing import Iterable
 
-from .tensor import Tensor
+from edugrad.tensor import Tensor
 
 
 class Optimizer:

@@ -5,7 +5,7 @@ from typing import NamedTuple, Iterator
 
 import numpy as np
 
-from .tensor import Tensor
+from edugrad.tensor import Tensor
 
 Batch = NamedTuple("Batch", [("inputs", Tensor), ("targets", Tensor)])
 

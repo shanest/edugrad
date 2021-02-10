@@ -27,6 +27,7 @@ numpy arrays in two places:
 from typing import Iterable
 import numpy as np
 import networkx as nx
+import edugrad.ops as ops
 
 
 class Tensor:
@@ -91,3 +92,6 @@ class Tensor:
 
         visit(self)
         return graph
+
+    def __add__(self, other):
+        return ops.add(self, other)
