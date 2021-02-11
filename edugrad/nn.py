@@ -58,7 +58,7 @@ class Module:
             params.extend(self._modules[module].parameters())
         return params
 
-    def forward(self, *inputs: List[Tensor]) -> Tensor:
+    def forward(self, *inputs: List[Tensor], **kwargs) -> Tensor:
         raise NotImplementedError
 
     def __setattr__(self, key, value) -> None:
@@ -69,8 +69,8 @@ class Module:
             self._modules[key] = value
         super(Module, self).__setattr__(key, value)
 
-    def __call__(self, *inputs: List[Tensor]) -> Tensor:
-        return self.forward(*inputs)
+    def __call__(self, *inputs: List[Tensor], **kwargs) -> Tensor:
+        return self.forward(*inputs, **kwargs)
 
 
 class Linear(Module):
