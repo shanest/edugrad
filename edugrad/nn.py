@@ -81,17 +81,17 @@ class Linear(Module):
         initializer: Callable = np.random.random,
         bias: bool = True,
     ):
-    """A Linear module computes defines weights W, optionally biases b, and
-    computers wX + b.
+        """A Linear module computes defines weights W, optionally biases b, and
+        computers wX + b.
 
-    Weight vector will have shape (input size, output size)
+        Weight vector will have shape (input size, output size)
 
-    Args:
-        input_size: dimension of input vectors
-        output_size: dimension of output vectors
-        initializer: how to initialize weights and biases
-        bias: whether or not to include the bias term; not needed for, e.g. embeddings
-    """
+        Args:
+            input_size: dimension of input vectors
+            output_size: dimension of output vectors
+            initializer: how to initialize weights and biases
+            bias: whether or not to include the bias term; not needed for, e.g. embeddings
+        """
         super(Linear, self).__init__()
         self.weights = Tensor(initializer((input_size, output_size)), name="W")
         self.bias = bias

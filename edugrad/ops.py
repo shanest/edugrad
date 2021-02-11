@@ -92,12 +92,16 @@ class matmul(Operation):
 
 
 @tensor_op
-class square(Operation):
-    def forward(ctx, a):
-        return a ** 2
+class power(Operation):
+    """Raise to a power, e.g. a^exponent. """
+    def forward(ctx, a, exponent = 1):
+        ctx.append(a)
+        ctx.append(exponent)
+        return a ** exponent
 
     def backward(ctx, grad_output):
-        return [2 * grad_output]
+        value, exponent = ctx
+        return [exponent * value ** (exponent-1) * grad_output]
 
 
 @tensor_op
@@ -147,5 +151,5 @@ class copy_rows(Operation):
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
     """Computes mean( (yhat - y)^2 ) """
     diff = minus(predicted, targets)
-    squared = square(diff)
+    squared = diff**2
     return reduce_mean(squared)

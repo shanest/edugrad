@@ -101,3 +101,6 @@ class Tensor:
 
     def __sub__(self, other):
         return ops.minus(self, other)
+
+    def __pow__(self, other):
+        return ops.power(self, exponent=other)
