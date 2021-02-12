@@ -1,5 +1,5 @@
-from .ops import *
-# need to load ops before tensor because of dependency
-from .tensor import *
-from . import optim
-from . import data
+import edugrad.ops
+import edugrad.tensor
+import edugrad.optim
+import edugrad.data
+import edugrad.nn
