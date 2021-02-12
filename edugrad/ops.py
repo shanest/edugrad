@@ -63,29 +63,35 @@ def tensor_op(op: Operation) -> Callable[[List[Tensor]], Tensor]:
 
 @tensor_op
 class add(Operation):
+    @staticmethod
     def forward(ctx, a, b):
         return a + b
 
+    @staticmethod
     def backward(ctx, grad_output):
         return grad_output, grad_output
 
 
 @tensor_op
 class minus(Operation):
+    @staticmethod
     def forward(ctx, a, b):
         return a - b
 
+    @staticmethod
     def backward(ctx, grad_output):
         return grad_output, -grad_output
 
 
 @tensor_op
 class matmul(Operation):
+    @staticmethod
     def forward(ctx, mat1, mat2):
         ctx.append(mat1)
         ctx.append(mat2)
         return mat1 @ mat2
 
+    @staticmethod
     def backward(ctx, grad_output):
         mat1, mat2 = ctx
         return grad_output @ mat2.T, mat1.T @ grad_output
@@ -94,11 +100,13 @@ class matmul(Operation):
 @tensor_op
 class power(Operation):
     """Raise to a power, e.g. a^exponent. """
+    @staticmethod
     def forward(ctx, a, exponent = 1):
         ctx.append(a)
         ctx.append(exponent)
         return a ** exponent
 
+    @staticmethod
     def backward(ctx, grad_output):
         value, exponent = ctx
         return [exponent * value ** (exponent-1) * grad_output]
@@ -106,11 +114,13 @@ class power(Operation):
 
 @tensor_op
 class relu(Operation):
+    @staticmethod
     def forward(ctx, value):
         new_val = np.maximum(0, value)
         ctx.append(new_val)
         return new_val
 
+    @staticmethod
     def backward(ctx, grad_output):
         value = ctx[-1]
         return [(value > 0).astype(float)]
@@ -118,20 +128,24 @@ class relu(Operation):
 
 @tensor_op
 class reduce_sum(Operation):
+    @staticmethod
     def forward(ctx, value):
         ctx.append(value)
         return np.sum(value)
 
+    @staticmethod
     def backward(ctx, grad_output):
         return [np.ones(ctx[-1].shape) * grad_output]
 
 
 @tensor_op
 class reduce_mean(Operation):
+    @staticmethod
     def forward(ctx, value):
         ctx.append(value)
         return np.mean(value)
 
+    @staticmethod
     def backward(ctx, grad_output):
         shape = ctx[-1].shape
         return [np.ones(shape) * grad_output / np.prod(shape)]
@@ -141,9 +155,11 @@ class reduce_mean(Operation):
 class copy_rows(Operation):
     """ Copies a (1, dim) array into (num, dim) """
 
+    @staticmethod
     def forward(ctx, value, num=1):
         return np.tile(value, (num, 1))
 
+    @staticmethod
     def backward(ctx, grad_output):
         return np.sum(grad_output, axis=0)
 
