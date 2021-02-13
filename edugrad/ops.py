@@ -161,7 +161,7 @@ class copy_rows(Operation):
 
     @staticmethod
     def backward(ctx, grad_output):
-        return np.sum(grad_output, axis=0)
+        return [np.sum(grad_output, axis=0)]
 
 
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
