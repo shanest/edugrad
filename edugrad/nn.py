@@ -73,12 +73,16 @@ class Module:
         return self.forward(*inputs, **kwargs)
 
 
+def uniform_initializer(shape: tuple[int], scale: float) -> np.array:
+    """Returns array of `shape` with values from U(-scale, scale). """
+    return (2 * np.random.random(*shape) - 1) * scale
+
+
 class Linear(Module):
     def __init__(
         self,
         input_size: int,
         output_size: int,
-        initializer: Callable = np.random.random,
         bias: bool = True,
     ):
         """A Linear module computes defines weights W, optionally biases b, and
@@ -93,11 +97,12 @@ class Linear(Module):
             bias: whether or not to include the bias term; not needed for, e.g. embeddings
         """
         super(Linear, self).__init__()
-        self.weights = Tensor(initializer((input_size, output_size)), name="W")
+        scale = 1 / np.sqrt(input_size)
+        self.weights = Tensor(uniform_initializer((input_size, output_size), scale=scale), name="W")
         self.bias = bias
         if self.bias:
             # biases initialize to 0
-            self.biases = Tensor(np.zeros((1, output_size)), name="b")
+            self.biases = Tensor(uniform_initializer((1, output_size), scale=scale), name="b")
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)

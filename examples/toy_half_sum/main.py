@@ -19,11 +19,8 @@ class MLP(nn.Module):
         self.output = nn.Linear(32, output_size, initializer=he_initializer)
 
     def forward(self, inputs):
-        print(inputs.value)
         hidden = edugrad.ops.relu(self.fc1(inputs))
-        print(hidden.value)
         hidden = edugrad.ops.relu(self.fc2(hidden))
-        print(hidden.value)
         return self.output(hidden)
 
 
@@ -53,7 +50,7 @@ if __name__ == "__main__":
         for batch in train_iterator(inputs, targets):
             model.zero_grad()
             predicted = model(batch.inputs)
-            loss = edugrad.mse_loss(predicted, batch.targets)
+            loss = edugrad.ops.mse_loss(predicted, batch.targets)
             loss.backward()
             optimizer.step()
             total_loss += loss.value
