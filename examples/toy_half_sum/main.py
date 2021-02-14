@@ -55,9 +55,9 @@ if __name__ == "__main__":
     for epoch in range(num_epochs):
         total_loss = 0.0
         for batch in train_iterator(inputs, targets):
-            model.zero_grad()
             predicted = model(batch.inputs)
             loss = edugrad.ops.mse_loss(predicted, batch.targets)
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             total_loss += loss.value
