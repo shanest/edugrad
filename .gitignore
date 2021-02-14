@@ -6,3 +6,4 @@ dist
 *.sh
 TODO.txt
 .DS_Store
+tests

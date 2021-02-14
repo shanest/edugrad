@@ -98,16 +98,16 @@ class Linear(Module):
         """
         super(Linear, self).__init__()
         scale = 1 / np.sqrt(input_size)
-        self.weights = Tensor(uniform_initializer((input_size, output_size), scale=scale), name="W")
-        self.bias = bias
-        if self.bias:
+        self.weight = Tensor(uniform_initializer((input_size, output_size), scale=scale), name="W")
+        self.has_bias = bias
+        if self.has_bias:
             # biases initialize to 0
-            self.biases = Tensor(uniform_initializer((output_size,), scale=scale), name="b")
+            self.bias = Tensor(uniform_initializer((output_size,), scale=scale), name="b")
 
     def forward(self, inputs: Tensor):
-        mul_node = ops.matmul(inputs, self.weights)
+        mul_node = ops.matmul(inputs, self.weight)
         if self.bias:
             # NOTE: this is a hack-ish way of handling shape issues with biases
-            expanded_biases = ops.copy_rows(self.biases, num=inputs.value.shape[0])
+            expanded_biases = ops.copy_rows(self.bias, num=inputs.value.shape[0])
             return ops.add(mul_node, expanded_biases)
         return mul_node
