@@ -7,16 +7,12 @@ import edugrad.nn as nn
 import util
 
 
-def he_initializer(shape: tuple[int]) -> np.array:
-    return np.random.randn(*shape) * np.sqrt(2.0 / shape[0])
-
-
 class MLP(nn.Module):
     def __init__(self, input_size, output_size):
         super(MLP, self).__init__()
-        self.fc1 = nn.Linear(input_size, 32, initializer=he_initializer)
-        self.fc2 = nn.Linear(32, 32, initializer=he_initializer)
-        self.output = nn.Linear(32, output_size, initializer=he_initializer)
+        self.fc1 = nn.Linear(input_size, 32)
+        self.fc2 = nn.Linear(32, 32)
+        self.output = nn.Linear(32, output_size)
 
     def forward(self, inputs):
         hidden = edugrad.ops.relu(self.fc1(inputs))
@@ -42,7 +38,7 @@ if __name__ == "__main__":
     test_inputs, test_targets = inputs[train_split:], targets[train_split:]
 
     model = MLP(input_size, 1)
-    optimizer = edugrad.optim.SGD(model.parameters())
+    optimizer = edugrad.optim.SGD(model.parameters(), lr=1e-3)
     train_iterator = edugrad.data.BatchIterator(batch_size=batch_size)
 
     for epoch in range(num_epochs):
@@ -56,7 +52,9 @@ if __name__ == "__main__":
             total_loss += loss.value
         print(f"Epoch {epoch} loss: {total_loss / train_iterator.num_batches}")
 
-    test_predictions = model(edugrad.Tensor(test_inputs, name="x"))
-    loss = edugrad.mse_loss(test_predictions, edugrad.Tensor(test_targets, name="y"))
+    test_predictions = model(edugrad.tensor.Tensor(test_inputs, name="x"))
+    loss = edugrad.ops.mse_loss(
+        test_predictions, edugrad.tensor.Tensor(test_targets, name="y")
+    )
     print(f"Test loss: {loss.value}")
     util.draw_graph(loss.get_graph_above())
