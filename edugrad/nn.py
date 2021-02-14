@@ -106,7 +106,7 @@ class Linear(Module):
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weight)
-        if self.bias:
+        if self.has_bias:
             # NOTE: this is a hack-ish way of handling shape issues with biases
             expanded_biases = ops.copy_rows(self.bias, num=inputs.value.shape[0])
             return ops.add(mul_node, expanded_biases)
