@@ -75,7 +75,7 @@ class Module:
 
 def uniform_initializer(shape: tuple[int], scale: float) -> np.array:
     """Returns array of `shape` with values from U(-scale, scale). """
-    return (2 * np.random.random(*shape) - 1) * scale
+    return (2 * np.random.random(shape) - 1) * scale
 
 
 class Linear(Module):
