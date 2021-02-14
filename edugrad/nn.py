@@ -102,7 +102,7 @@ class Linear(Module):
         self.bias = bias
         if self.bias:
             # biases initialize to 0
-            self.biases = Tensor(uniform_initializer((1, output_size), scale=scale), name="b")
+            self.biases = Tensor(uniform_initializer((output_size,), scale=scale), name="b")
 
     def forward(self, inputs: Tensor):
         mul_node = ops.matmul(inputs, self.weights)

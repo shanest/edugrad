@@ -153,11 +153,11 @@ class reduce_mean(Operation):
 
 @tensor_op
 class copy_rows(Operation):
-    """ Copies a (1, dim) array into (num, dim) """
+    """ Copies a (dim) array into (num, dim) """
 
     @staticmethod
     def forward(ctx, value, num=1):
-        return np.tile(value, (num, 1))
+        return np.stack([value] * num)
 
     @staticmethod
     def backward(ctx, grad_output):
