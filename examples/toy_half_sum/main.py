@@ -1,10 +1,11 @@
 import itertools
 import numpy as np
+import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
+import matplotlib.pyplot as plt
 
 import edugrad
 import edugrad.nn as nn
-
-import util
 
 
 class MLP(nn.Module):
@@ -18,6 +19,16 @@ class MLP(nn.Module):
         hidden = edugrad.ops.relu(self.fc1(inputs))
         hidden = edugrad.ops.relu(self.fc2(hidden))
         return self.output(hidden)
+
+
+def draw_graph(graph: nx.DiGraph) -> None:
+    nx.draw(
+        graph,
+        graphviz_layout(graph, prog="dot"),
+        labels={node: node.name for node in graph},
+    )
+    # TODO: write to file if specified
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -57,4 +68,4 @@ if __name__ == "__main__":
         test_predictions, edugrad.tensor.Tensor(test_targets, name="y")
     )
     print(f"Test loss: {loss.value}")
-    util.draw_graph(loss.get_graph_above())
+    draw_graph(loss.get_graph_above())
