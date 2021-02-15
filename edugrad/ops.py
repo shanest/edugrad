@@ -123,7 +123,7 @@ class relu(Operation):
     @staticmethod
     def backward(ctx, grad_output):
         value = ctx[-1]
-        return [(value > 0).astype(float)]
+        return [(value > 0).astype(float) * grad_output]
 
 
 @tensor_op
