@@ -1,8 +1,5 @@
 import itertools
 import numpy as np
-import networkx as nx
-from networkx.drawing.nx_agraph import graphviz_layout
-import matplotlib.pyplot as plt
 
 import edugrad
 import edugrad.nn as nn
@@ -21,13 +18,22 @@ class MLP(nn.Module):
         return self.output(hidden)
 
 
-def draw_graph(graph: nx.DiGraph) -> None:
+def draw_graph(edges) -> None:
+    """Draw the computation graph given a list of (parent, child) edge tuples.
+
+    Requires the [viz] optional dependencies: networkx, matplotlib, pygraphviz.
+    """
+    import networkx as nx
+    from networkx.drawing.nx_agraph import graphviz_layout
+    import matplotlib.pyplot as plt
+
+    graph = nx.DiGraph()
+    graph.add_edges_from(edges)
     nx.draw(
         graph,
         graphviz_layout(graph, prog="dot"),
         labels={node: node.name for node in graph},
     )
-    # TODO: write to file if specified
     plt.show()
 
 
@@ -63,9 +69,9 @@ if __name__ == "__main__":
             total_loss += loss.value
         print(f"Epoch {epoch} loss: {total_loss / train_iterator.num_batches}")
 
-    test_predictions = model(edugrad.tensor.Tensor(test_inputs, name="x"))
+    test_predictions = model(edugrad.Tensor(test_inputs, name="x"))
     loss = edugrad.ops.mse_loss(
-        test_predictions, edugrad.tensor.Tensor(test_targets, name="y")
+        test_predictions, edugrad.Tensor(test_targets, name="y")
     )
     print(f"Test loss: {loss.value}")
     draw_graph(loss.get_graph_above())

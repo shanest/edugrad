@@ -1,0 +1,29 @@
+[project]
+name = "edugrad"
+version = "0.1.0"
+description = "Minimal dynamic computation graph with backpropagation, for pedagogical purposes"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+authors = [{ name = "Shane Steinert-Threlkeld", email = "ssshanest@gmail.com" }]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Education",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["autograd", "backpropagation", "deep learning", "education", "pedagogy"]
+dependencies = ["numpy>=1.21"]
+
+[project.optional-dependencies]
+viz = ["networkx>=2.6", "matplotlib", "pygraphviz"]
+dev = ["pytest", "ruff"]
+
+[project.urls]
+Homepage = "https://github.com/shanest/edugrad"
+Repository = "https://github.com/shanest/edugrad"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

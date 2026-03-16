@@ -1,4 +1,0 @@
-numpy>=1.17
-networkx>=2.4
-matplotlib
-pygraphviz

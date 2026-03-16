@@ -1,5 +1,4 @@
-import edugrad.ops
-import edugrad.tensor
-import edugrad.optim
-import edugrad.data
-import edugrad.nn
+from edugrad.tensor import Tensor
+from edugrad import ops, nn, optim, data
+
+__all__ = ["Tensor", "ops", "nn", "optim", "data"]
