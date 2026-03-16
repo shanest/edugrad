@@ -3,7 +3,5 @@ __pycache__
 build
 dist
 *.egg-info
-*.sh
-TODO.txt
 .DS_Store
-tests
+.venv
