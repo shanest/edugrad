@@ -3,8 +3,6 @@
 Also includes a Linear Module, for computing xW + b.
 """
 
-from typing import List
-
 import numpy as np
 
 from edugrad.tensor import Tensor
@@ -35,14 +33,14 @@ class Module:
         for param in self.parameters():
             param.grad = np.zeros(param.value.shape)
 
-    def parameters(self) -> List[Tensor]:
+    def parameters(self) -> list[Tensor]:
         """Return a list of all parameters of this module."""
         params = list(self._params.values())
         for module in self._modules:
             params.extend(self._modules[module].parameters())
         return params
 
-    def forward(self, *inputs: List[Tensor], **kwargs) -> Tensor:
+    def forward(self, *inputs: Tensor, **kwargs) -> Tensor:
         raise NotImplementedError
 
     def __setattr__(self, key, value) -> None:
@@ -51,9 +49,9 @@ class Module:
             self._params[key] = value
         elif isinstance(value, Module):
             self._modules[key] = value
-        super(Module, self).__setattr__(key, value)
+        super().__setattr__(key, value)
 
-    def __call__(self, *inputs: List[Tensor], **kwargs) -> Tensor:
+    def __call__(self, *inputs: Tensor, **kwargs) -> Tensor:
         return self.forward(*inputs, **kwargs)
 
 
@@ -77,7 +75,7 @@ class Linear(Module):
         output_size: int,
         bias: bool = True,
     ):
-        super(Linear, self).__init__()
+        super().__init__()
         scale = 1 / np.sqrt(input_size)
         self.weight = Tensor(
             uniform_initializer((input_size, output_size), scale=scale), name="W"

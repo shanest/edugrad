@@ -1,13 +1,21 @@
-""" See joelnet/data.py by Joel Grus at
-https://github.com/joelgrus/joelnet/blob/master/joelnet/data.py """
+"""Data loading utilities.
 
-from typing import NamedTuple, Iterator
+Inspired by joelnet/data.py by Joel Grus:
+https://github.com/joelgrus/joelnet/blob/master/joelnet/data.py
+"""
+
+from collections.abc import Iterator
+from dataclasses import dataclass
 
 import numpy as np
 
 from edugrad.tensor import Tensor
 
-Batch = NamedTuple("Batch", [("inputs", Tensor), ("targets", Tensor)])
+
+@dataclass
+class Batch:
+    inputs: Tensor
+    targets: Tensor
 
 
 class DataIterator:

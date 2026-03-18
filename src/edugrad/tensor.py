@@ -7,18 +7,14 @@ numpy arrays in two places:
     * via `tensor_op` (see `ops.py`)
 """
 
-from __future__ import annotations
-
-from typing import Callable, Iterable, List
+from collections.abc import Callable, Iterable
 
 import numpy as np
 
 
 class Operation:
     @staticmethod
-    def forward(
-        ctx: List[np.ndarray], *inputs: List[np.ndarray], **kwargs
-    ) -> np.ndarray:
+    def forward(ctx: list[np.ndarray], *inputs: np.ndarray, **kwargs) -> np.ndarray:
         """Forward pass of an operation.
 
         Args:
@@ -31,7 +27,7 @@ class Operation:
         raise NotImplementedError
 
     @staticmethod
-    def backward(ctx: List[np.ndarray], grad_output: np.ndarray) -> List[np.ndarray]:
+    def backward(ctx: list[np.ndarray], grad_output: np.ndarray) -> list[np.ndarray]:
         """Backward pass: returns dL/dx for each x in the inputs of this op.
 
         Args:
@@ -44,14 +40,14 @@ class Operation:
         raise NotImplementedError
 
 
-def tensor_op(op: Operation) -> Callable[[List[Tensor]], Tensor]:
+def tensor_op(op: Operation) -> Callable[[list[Tensor]], Tensor]:
     """Takes an operation and turns it into a callable function on Tensors.
 
     The resulting function implicitly builds the dynamic computation graph,
     including populating the Tensors' _backward methods, when called.
     """
 
-    def fn(*inputs: List[Tensor], **kwargs) -> Tensor:
+    def fn(*inputs: Tensor, **kwargs) -> Tensor:
         ctx = []
         new_tensor = Tensor(
             op.forward(ctx, *[tensor.value for tensor in inputs], **kwargs),
@@ -61,8 +57,8 @@ def tensor_op(op: Operation) -> Callable[[List[Tensor]], Tensor]:
 
         def _backward():
             grads = op.backward(ctx, new_tensor.grad)
-            for idx in range(len(inputs)):
-                inputs[idx].grad += grads[idx]
+            for idx, inp in enumerate(inputs):
+                inp.grad += grads[idx]
 
         new_tensor._backward = _backward
         return new_tensor
@@ -80,7 +76,9 @@ class Tensor:
         grad: gradient, if it has been computed; numpy array of same shape as value
     """
 
-    def __init__(self, value: np.ndarray, parents: Iterable = (), name: str = None):
+    def __init__(
+        self, value: np.ndarray, parents: Iterable = (), name: str | None = None
+    ):
         """Initialize values, set gradients to zero."""
         self.value = value
         self.parents = parents

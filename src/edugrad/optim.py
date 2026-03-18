@@ -1,8 +1,9 @@
 """Optimizers update model parameters using computed gradients."""
 
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
+
 from edugrad.tensor import Tensor
 
 
@@ -22,7 +23,7 @@ class Optimizer:
 
 class SGD(Optimizer):
     def __init__(self, params: Iterable[Tensor], lr: float = 1e-4):
-        super(SGD, self).__init__(params)
+        super().__init__(params)
         self.lr = lr
 
     def step(self):
