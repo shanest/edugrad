@@ -7,6 +7,8 @@ numpy arrays in two places:
     * via `tensor_op` (see `ops.py`)
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable, Iterable
 
 import numpy as np
@@ -14,7 +16,9 @@ import numpy as np
 
 class Operation:
     @staticmethod
-    def forward(ctx: list[np.ndarray], *inputs: np.ndarray, **kwargs) -> np.ndarray:
+    def forward(
+        ctx: list[np.ndarray], *args: np.ndarray, **kwargs: dict | None
+    ) -> np.ndarray:
         """Forward pass of an operation.
 
         Args:
@@ -27,7 +31,9 @@ class Operation:
         raise NotImplementedError
 
     @staticmethod
-    def backward(ctx: list[np.ndarray], grad_output: np.ndarray) -> list[np.ndarray]:
+    def backward(
+        ctx: list[np.ndarray], grad_output: np.ndarray
+    ) -> tuple[np.ndarray, ...]:
         """Backward pass: returns dL/dx for each x in the inputs of this op.
 
         Args:
@@ -40,7 +46,7 @@ class Operation:
         raise NotImplementedError
 
 
-def tensor_op(op: Operation) -> Callable[[list[Tensor]], Tensor]:
+def tensor_op(op: type[Operation]) -> Callable[[list[Tensor]], Tensor]:
     """Takes an operation and turns it into a callable function on Tensors.
 
     The resulting function implicitly builds the dynamic computation graph,

@@ -54,12 +54,12 @@ class power(Operation):
     def forward(ctx, a, exponent=1):
         ctx.append(a)
         ctx.append(exponent)
-        return a ** exponent
+        return a**exponent
 
     @staticmethod
     def backward(ctx, grad_output):
         value, exponent = ctx
-        return [exponent * value ** (exponent - 1) * grad_output]
+        return (exponent * value ** (exponent - 1) * grad_output,)
 
 
 @tensor_op
@@ -73,7 +73,7 @@ class relu(Operation):
     @staticmethod
     def backward(ctx, grad_output):
         value = ctx[-1]
-        return [(value > 0).astype(float) * grad_output]
+        return ((value > 0).astype(float) * grad_output,)
 
 
 @tensor_op
@@ -85,7 +85,7 @@ class reduce_sum(Operation):
 
     @staticmethod
     def backward(ctx, grad_output):
-        return [np.ones(ctx[-1].shape) * grad_output]
+        return (np.ones(ctx[-1].shape) * grad_output,)
 
 
 @tensor_op
@@ -98,7 +98,7 @@ class reduce_mean(Operation):
     @staticmethod
     def backward(ctx, grad_output):
         shape = ctx[-1].shape
-        return [np.ones(shape) * grad_output / np.prod(shape)]
+        return (np.ones(shape) * grad_output / np.prod(shape),)
 
 
 @tensor_op
@@ -111,11 +111,11 @@ class copy_rows(Operation):
 
     @staticmethod
     def backward(ctx, grad_output):
-        return [np.sum(grad_output, axis=0)]
+        return (np.sum(grad_output, axis=0),)
 
 
 def mse_loss(predicted: Tensor, targets: Tensor) -> Tensor:
     """Computes mean( (yhat - y)^2 )."""
     diff = minus(predicted, targets)
-    squared = diff ** 2
+    squared = diff**2
     return reduce_mean(squared)
